@@ -76,6 +76,7 @@ const checkCollision = (from, to) => {
 }
 
 let updateDistance = 0;
+let dx = 0;
 const init = () => {
     const svg = document.getElementsByTagName("svg")[0];
     svg.style.position = "absolute";
@@ -112,7 +113,35 @@ const init = () => {
     road.style.background = "linear-gradient(0, #00f 50%, #f00 50%)";
     road.style.backgroundSize = "100px 100px";
 
-    createObject(500);
+    let originalX = -1;
+    document.onmousedown = document.ontouchstart = (e) => {
+      e.preventDefault();
+      if (e.touches && e.touches[0]) {
+        e = e.touches[0];
+      }
+      originalX = e.pageX;
+      dx = 0;
+    };
+    document.onmousemove = document.ontouchmove = (e) => {
+      e.preventDefault();
+      if (e.touches && e.touches[0]) {
+        e = e.touches[0];
+      }
+      if (originalX !== -1) {
+        if (e.pageX - originalX > 0) {
+          dx = 1;
+        } else if (e.pageX - originalX < 0) {
+          dx = -1;
+        }
+      }
+    };
+    document.onmouseup = document.ontouchend = (e) => {
+      e.preventDefault();
+      originalX = -1;
+      dx = 0;
+    };
+  
+      createObject(500);
     updateDistance = 500;
 
     render();
@@ -123,11 +152,8 @@ let heroY = 0;
 
 window.onload = async () => {
     init();
-    let dummy = 0;
     let v = 0;
     while (true) {
-        dummy++;
-
         if (heroY > updateDistance) {
             updateDistance += 1000;
             createObject(updateDistance);
@@ -142,7 +168,8 @@ window.onload = async () => {
             v = -v;
         }
         heroY += v;
-        heroX = (Math.sin(dummy * 0.05) * roadWidth / 2);
+        heroX += dx * 3;
+        heroX = Math.max(Math.min(heroX, roadWidth / 2), -roadWidth / 2);
         render();
         await new Promise(r => setTimeout(r, 16));
 
