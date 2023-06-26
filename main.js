@@ -95,10 +95,28 @@ const checkCollision = (from, to) => {
 }
 
 // レース開始前にカウントダウンする
-// let count = 3;
-// const countDown = () => {
-//     console.log(count--);
-// }
+let count = 5;
+const countDown = () => {
+    count--;
+    switch (count) {
+        case 3:
+            countNum.textContent = "3";
+            break;
+        case 2:
+            countNum.textContent = "2";
+            break;
+        case 1:
+            countNum.textContent = "1";
+            break;
+        case 0:
+            countNum.textContent = "GO!!";
+            break;
+        case -2:
+            countNum.textContent = "";
+            break;
+    }
+
+}
 
 // 画面の初期設定
 let updateDistance = 0;
@@ -117,7 +135,7 @@ const init = () => {
     message.style.position = "absolute";
     message.style.left = "5px";
     message.style.top = `${height}px`;
-    message.textContent = "test";
+    message.textContent = "Time: --- / Score: ---";
 
     container = document.createElement("div");
     document.body.insertBefore(container, svg);
@@ -126,7 +144,7 @@ const init = () => {
     container.style.height = `${height}px`;
     container.style.left = 0;
     container.style.top = 0;
-    container.style.backgroundColor = "#0ff";
+    container.style.backgroundColor = "#223A70";
     container.style.overflow = "hidden";
     container.style.perspective = `${perspective}px`;
 
@@ -135,16 +153,25 @@ const init = () => {
     ground.style.position = "absolute";
     ground.style.width = `${groundWidth}px`;
     ground.style.height = `${groundHeight}px`;
-    ground.style.backgroundColor = "#080";
+    ground.style.backgroundColor = "#000";
 
     road = document.createElement("div");
     container.append(road);
     road.style.position = "absolute";
     road.style.width = `${roadWidth}px`;
     road.style.height = `${roadHeight}px`;
-    road.style.background = "linear-gradient(0, #00f 50%, #f00 50%)";
+    // road.style.background = "linear-gradient(0, #00f 50%, #f00 50%)";
+    road.style.background = "linear-gradient(to bottom, #F00, #FFA500 15%, #FF0 30%, #008000 44%, #0FF 58%, #00F 72%, #800080)";
     road.style.backgroundSize = "100px 100px";
 
+    countNum = document.createElement("p");
+    container.append(countNum);
+    countNum.style.fontSize = "30px";
+    countNum.style.color = "#FFF";
+    countNum.style.textAlign = "center";
+    countNum.textContent = "Are You Ready?";
+
+    // マウス操作による左右移動
     let originalX = -1;
     document.onmousedown = document.ontouchstart = (e) => {
         e.preventDefault();
@@ -173,9 +200,27 @@ const init = () => {
         dx = 0;
     };
 
+    // 矢印キー操作による左右移動
+    let keydown = '';
+    document.body.addEventListener('keydown', e => {
+        keydown = e.key;
+        switch (keydown) {
+            case 'ArrowLeft':
+                dx = -1;
+                console.log(dx);
+                break;
+            case 'ArrowRight':
+                dx = 1;
+                break;
+        }
+    });
+    document.body.addEventListener('keyup', e => {
+        dx = 0;
+    });
+    
+    // 初期的にオブジェクトを500px分生成
     createObject(500);
     updateDistance = 500;
-
     render();
 };
 
@@ -183,16 +228,29 @@ let heroX = 0;
 let heroY = 0;
 let heroDeg = 0;
 
-window.onload = async () => {
+// window.onload = async () => {
+window.onload = () => {
     init();
-    let v = 0;
 
+    const intervalId = setInterval(() => {
+        countDown();
+        if (count == 0) {
+            startGame();
+        } else if (count == -2) {
+            clearInterval(intervalId);//intervalIdをclearIntervalで指定
+        }
+    }, 1000);
+}
+
+const startGame = async () => {
+    let v = 0;
     const endTime = Date.now() + 30000;
+
     while (true) {
-        // if (Date.now() > endTime - 27000) {
         const leftTime = Math.max(0, endTime - Date.now()) / 1000;
         message.textContent = `TIme: ${leftTime.toFixed(3)} / Score: ${score}`;
 
+        // 一定の走行距離を超える度に1000px分オブジェクトを追加生成
         if (heroY > updateDistance) {
             updateDistance += 1000;
             createObject(updateDistance);
@@ -233,18 +291,12 @@ window.onload = async () => {
         heroX = Math.max(Math.min(heroX, roadWidth / 2), -roadWidth / 2);
         render();
         if (leftTime === 0) {
-            return;
+            break;
         }
-        await new Promise(r => setTimeout(r, 16));
 
-        // } else {
-        //     const intervalId = setInterval(() => {
-        //         countDown();
-        //         if (count < 0) {
-        //             clearInterval(intervalId);　//intervalIdをclearIntervalで指定している
-        //         }
-        //     }, 1000);
-        // }
+        // async内でのみ機能する動作
+        await new Promise(r => setTimeout(r, 16));
     }
 
+    countNum.textContent = "Finish!";
 };
