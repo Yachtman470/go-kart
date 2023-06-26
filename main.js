@@ -101,6 +101,7 @@ const countDown = () => {
     switch (count) {
         case 3:
             countNum.textContent = "3";
+            audio_start.play();
             break;
         case 2:
             countNum.textContent = "2";
@@ -207,7 +208,6 @@ const init = () => {
         switch (keydown) {
             case 'ArrowLeft':
                 dx = -1;
-                console.log(dx);
                 break;
             case 'ArrowRight':
                 dx = 1;
@@ -217,7 +217,7 @@ const init = () => {
     document.body.addEventListener('keyup', e => {
         dx = 0;
     });
-    
+
     // 初期的にオブジェクトを500px分生成
     createObject(500);
     updateDistance = 500;
@@ -227,10 +227,17 @@ const init = () => {
 let heroX = 0;
 let heroY = 0;
 let heroDeg = 0;
+const audio_start = new Audio("sound/start.mp3");
+const audio_race = new Audio("sound/race.mp3");
+const audio_clear = new Audio("sound/clear.mp3");
 
 // window.onload = async () => {
 window.onload = () => {
     init();
+
+    // スタート前からレースBGMを流す
+
+    audio_race.play();
 
     const intervalId = setInterval(() => {
         countDown();
@@ -242,9 +249,12 @@ window.onload = () => {
     }, 1000);
 }
 
+// 一定時間処理を遅らせる関数
+const sleep = waitTime => new Promise(resolve => setTimeout(resolve, waitTime));
+
 const startGame = async () => {
     let v = 0;
-    const endTime = Date.now() + 30000;
+    const endTime = Date.now() + 5000;
 
     while (true) {
         const leftTime = Math.max(0, endTime - Date.now()) / 1000;
@@ -298,5 +308,9 @@ const startGame = async () => {
         await new Promise(r => setTimeout(r, 16));
     }
 
+    // レース終了
+    audio_race.pause();
     countNum.textContent = "Finish!";
+    await sleep(2000);
+    audio_clear.play();
 };
