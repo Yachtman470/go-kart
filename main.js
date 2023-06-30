@@ -1,6 +1,7 @@
 let container;
 const width = 300;
 const height = 300;
+const ajustWidth = 30;
 const perspective = 50;
 const screen_left = 300;
 const screen_top = 300;
@@ -53,18 +54,33 @@ let objectList = [];
 const createObject = (fromY) => {
     const addObjects = [];
     for (let i = 0; i < 10; i++) {
-        const isCoin = Math.random() < 0.7;
         const x = (Math.random() - 0.5) * roadWidth;
         const y = fromY + Math.random() * 1000;
-        const element = document.createElement("div");
+        const element = document.createElement("img");
+        // const element = document.createElement("div");
         element.style.position = "absolute";
         element.style.width = `${objectSize}px`;
         element.style.height = `${objectSize}px`;
         element.style.fontSize = `${objectSize}px`;
         element.style.overflow = "hidden";
-        element.textContent = isCoin ? "💰" : "🧱";
+        // let isCoin;
+        const whatObject = Math.random();
+        if (whatObject < 0.7) {
+            element.src = "img/coin.png";
+            element.style.borderRadius = "100%";
+            // isCoin = true;
+        } else if (whatObject < 0.85) {
+            element.src = "img/wall.png";
+        } else {
+            element.src = "img/kame.png";
+            element.style.borderRadius = "100%";
+            // isCoin = false;
+        }
+        // element.src = isCoin ? "img/coin.png" : "img/wall.png";
+        // element.style.borderRadius = isCoin ? "100%" : "0%";
+        // element.textContent = isCoin ? "💰" : "🧱";
         element.style.backgroundColor = "#880";
-        addObjects.push({ x, y, element, isCoin });
+        addObjects.push({ x, y, element, whatObject });
     }
     addObjects.sort((a, b) => a.y - b.y);
     addObjects.forEach((object) =>
@@ -75,17 +91,19 @@ const createObject = (fromY) => {
 
 let score = 0;
 const checkCollision = (from, to) => {
-    let collision = false;
+    let collision = 0;
     for (const object of objectList) {
-        const { x, y, element, isCoin } = object;
+        const { x, y, element, whatObject } = object;
         if (from <= y && y <= to) {
             if (Math.abs(x - heroX) < objectSize / 2) {
-                if (isCoin) {
+                if (whatObject < 0.7) {
                     score += 100;
                     element.remove();
                     object.willRemove = true;
+                } else if (whatObject < 0.85) {
+                    collision = 1;
                 } else {
-                    collision = true;
+                    collision = 2;
                 }
             } else {
                 element.remove();
@@ -117,6 +135,7 @@ const countDown = () => {
             break;
         case -2:
             countNum.textContent = "";
+            console.log("here");
             break;
     }
 
@@ -318,6 +337,7 @@ const audio_select = new Audio("sound/car_select.mp3");
 const audio_start = new Audio("sound/start.mp3");
 const audio_race = new Audio("sound/race.mp3");
 const audio_clear = new Audio("sound/clear.mp3");
+const audio_gameOver = new Audio("sound/gameOver.mp3");
 
 // window.onload = async () => {
 window.onload = () => {
@@ -329,7 +349,8 @@ const sleep = waitTime => new Promise(resolve => setTimeout(resolve, waitTime));
 
 const startGame = async () => {
     let v = 0;
-    const endTime = Date.now() + 5000;
+    let finish = true;
+    const endTime = Date.now() + 30000;
 
     while (true) {
         const leftTime = Math.max(0, endTime - Date.now()) / 1000;
@@ -367,13 +388,27 @@ const startGame = async () => {
         v += 0.1;
         v -= v ** 3 * 0.0003;
 
-        // 衝突判定
-        if (v > 0 && checkCollision(heroY - 30, heroY - 30 + v)) {
-            v = -v;
+        // 衝突/スリップ判定
+        if (v > 0) {
+            if (checkCollision(heroY - 30, heroY - 30 + v) == 1) {
+                v = -v;
+            } else if (checkCollision(heroY - 30, heroY - 30 + v) == 2) {
+                v = 3;
+                if (Math.random() < 0.5) {
+                    dx = 3;
+                } else {
+                    dx = -3;
+                }
+            }
         }
+
         heroY += v;
         heroX += dx * 3;
-        heroX = Math.max(Math.min(heroX, roadWidth / 2), -roadWidth / 2);
+        if (heroX < -roadWidth / 2 - ajustWidth || roadWidth / 2 + ajustWidth < heroX) {
+            finish = false;
+            break;
+        }
+        // heroX = Math.max(Math.min(heroX, roadWidth / 2), -roadWidth / 2);
         render();
         if (leftTime === 0) {
             break;
@@ -383,9 +418,16 @@ const startGame = async () => {
         await new Promise(r => setTimeout(r, 16));
     }
 
-    // レース終了
-    audio_race.pause();
-    countNum.textContent = "Finish!";
-    await sleep(2000);
-    audio_clear.play();
+    if (finish) {
+        // レース終了
+        audio_race.pause();
+        countNum.textContent = "Finish!";
+        await sleep(2000);
+        audio_clear.play();
+    } else {
+        audio_race.pause();
+        countNum.textContent = "Game Over...";
+        await sleep(2000);
+        audio_gameOver.play();
+    }
 };
