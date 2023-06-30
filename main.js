@@ -2,6 +2,8 @@ let container;
 const width = 300;
 const height = 300;
 const perspective = 50;
+const screen_left = 300;
+const screen_top = 300;
 
 const carSize = 120;
 const objectSize = 50;
@@ -119,17 +121,36 @@ const countDown = () => {
 
 }
 
+// ゲームのスタート画面
+const init_game = () => {
+    const car = document.getElementsByTagName("svg")[0];
+    // const car = document.createElement("img");
+    // car.src = "img/car_blue.png";
+    car.style.position = "absolute";
+    car.style.width = `${carSize}px`;
+    car.style.height = `${carSize}px`;
+    car.style.left = `${(width - carSize) / 2 + screen_left}px`;
+    car.style.top = `${((height - carSize) / 4) * 3 + screen_top}px`;
+
+    car.on('click', function () {
+        $("#header").toggleClass('open');
+    });
+
+}
+
 // 画面の初期設定
 let updateDistance = 0;
 let dx = 0;
 let message;
-const init = () => {
-    const svg = document.getElementsByTagName("svg")[0];
-    svg.style.position = "absolute";
-    svg.style.width = `${carSize}px`;
-    svg.style.height = `${carSize}px`;
-    svg.style.left = `${(width - carSize) / 2}px`;
-    svg.style.top = `${((height - carSize) / 4) * 3}px`;
+const init_race = () => {
+    const car = document.getElementsByTagName("svg")[0];
+    // const car = document.createElement("img");
+    // car.src = "img/car_blue.png";
+    car.style.position = "absolute";
+    car.style.width = `${carSize}px`;
+    car.style.height = `${carSize}px`;
+    car.style.left = `${(width - carSize) / 2 + screen_left}px`;
+    car.style.top = `${((height - carSize) / 4) * 3 + screen_top}px`;
 
     message = document.createElement("div");
     document.body.append(message);
@@ -138,13 +159,26 @@ const init = () => {
     message.style.top = `${height}px`;
     message.textContent = "Time: --- / Score: ---";
 
+    // // reference = document.createElement("div");
+    // author = document.createElement("a");
+    // document.body.append(author);
+    // // reference.append(author);
+    // author.style.position = "absolute";
+    // author.style.left = "5px";
+    // author.style.top = `${height + 300}px`;
+    // author.textContent = "Freepik";
+    // var link_car1 = "https://jp.freepik.com/free-vector/different-views-of-modern-car_1358018.htm#query=%E8%BB%8A&position=12&from_view=keyword&track=sph";
+    // author.href = link_car1;
+    // // 著作者：<a href=>Freepik</a>
+
     container = document.createElement("div");
-    document.body.insertBefore(container, svg);
+    document.body.insertBefore(container, car);
+    // document.body.before(container, car);
     container.style.position = "absolute";
     container.style.width = `${width}px`;
     container.style.height = `${height}px`;
-    container.style.left = 0;
-    container.style.top = 0;
+    container.style.left = `${screen_left}px`;
+    container.style.top = `${screen_top}px`;
     container.style.backgroundColor = "#223A70";
     container.style.overflow = "hidden";
     container.style.perspective = `${perspective}px`;
@@ -175,7 +209,7 @@ const init = () => {
     // マウス操作による左右移動
     let originalX = -1;
     document.onmousedown = document.ontouchstart = (e) => {
-        e.preventDefault();
+        // e.preventDefault();
         if (e.touches && e.touches[0]) {
             e = e.touches[0];
         }
@@ -183,7 +217,7 @@ const init = () => {
         dx = 0;
     };
     document.onmousemove = document.ontouchmove = (e) => {
-        e.preventDefault();
+        // e.preventDefault();
         if (e.touches && e.touches[0]) {
             e = e.touches[0];
         }
@@ -196,7 +230,7 @@ const init = () => {
         }
     };
     document.onmouseup = document.ontouchend = (e) => {
-        e.preventDefault();
+        // e.preventDefault();
         originalX = -1;
         dx = 0;
     };
@@ -233,7 +267,8 @@ const audio_clear = new Audio("sound/clear.mp3");
 
 // window.onload = async () => {
 window.onload = () => {
-    init();
+    // init_game();
+    init_race();
 
     // スタート前からレースBGMを流す
 
