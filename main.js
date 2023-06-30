@@ -6,6 +6,7 @@ const screen_left = 300;
 const screen_top = 300;
 
 const carSize = 120;
+const carShow = 400;
 const objectSize = 50;
 
 let ground;
@@ -121,21 +122,88 @@ const countDown = () => {
 
 }
 
+// 車の選択を0/1で保持
+let car_select;
 // ゲームのスタート画面
 const init_game = () => {
-    const car = document.getElementsByTagName("svg")[0];
-    // const car = document.createElement("img");
-    // car.src = "img/car_blue.png";
-    car.style.position = "absolute";
-    car.style.width = `${carSize}px`;
-    car.style.height = `${carSize}px`;
-    car.style.left = `${(width - carSize) / 2 + screen_left}px`;
-    car.style.top = `${((height - carSize) / 4) * 3 + screen_top}px`;
+    // 初期設定としてsvgを非表示
+    document.getElementById("car_white").style.display = "none";
+    document.getElementById("car_blue").style.display = "none";
 
-    car.on('click', function () {
-        $("#header").toggleClass('open');
-    });
+    const car0 = document.createElement("img");
+    car0.id = "test"
+    car0.src = "img/car_white.png";
+    car0.style.position = "absolute";
+    car0.style.width = `${carShow}px`;
+    car0.style.height = `${carShow}px`;
+    car0.style.left = `${(width - carShow) / 2}px`;
+    car0.style.top = `${((height - carShow) / 4) * 3 + screen_top}px`;
 
+    const car1 = document.createElement("img");
+    car1.id = "test"
+    car1.src = "img/car_blue.png";
+    car1.style.position = "absolute";
+    car1.style.width = `${carShow}px`;
+    car1.style.height = `${carShow}px`;
+    car1.style.left = `${(width - carShow) / 2 + 2 * screen_left}px`;
+    car1.style.top = `${((height - carShow) / 4) * 3 + screen_top}px`;
+
+    choose_p = document.createElement("p");
+    choose_p.style.fontSize = "30px";
+    choose_p.style.color = "#000";
+    choose_p.style.position = "absolute";
+    choose_p.style.textAlign = "center";
+    choose_p.innerText = "NO POLICE AND\nNO SPEED LIMITS...\n\nCHOODE YOUR CAR";
+    choose_p.style.left = `${screen_left}px`;
+    choose_p.style.top = `${screen_top / 3}px`;
+
+    document.body.append(car0);
+    document.body.append(car1);
+    document.body.append(choose_p);
+
+    // 何らかのキーボード入力時、車選択時のBGMを流す
+    window.addEventListener('click', e => {
+        audio_select.play();
+    }, { once: true });
+
+    // 矢印キー操作による左右移動
+    let keydown = '';
+    document.body.addEventListener('keydown', e => {
+        keydown = e.key;
+        switch (keydown) {
+            case 'ArrowLeft':
+                car_select = 0;
+                car0.remove();
+                car1.remove();
+                choose_p.remove();
+                audio_select.pause();
+                before_race();
+                break;
+            case 'ArrowRight':
+                car_select = 1;
+                car0.remove();
+                car1.remove();
+                choose_p.remove();
+                audio_select.pause();
+                before_race();
+                break;
+        }
+    }, { once: true });
+}
+
+const before_race = () => {
+    init_race();
+    // スタート前からレースBGMを流す
+    audio_race.play();
+
+    const intervalId = setInterval(() => {
+        countDown();
+        if (count == 0) {
+            startGame();
+        } else if (count == -2) {
+            clearInterval(intervalId);//intervalIdをclearIntervalで指定
+        }
+    }, 1000);
 }
 
 // 画面の初期設定
@@ -143,9 +211,8 @@ let updateDistance = 0;
 let dx = 0;
 let message;
 const init_race = () => {
-    const car = document.getElementsByTagName("svg")[0];
-    // const car = document.createElement("img");
-    // car.src = "img/car_blue.png";
+    const car = document.getElementsByTagName("svg")[car_select];
+    car.style.display = "block";
     car.style.position = "absolute";
     car.style.width = `${carSize}px`;
     car.style.height = `${carSize}px`;
@@ -159,21 +226,8 @@ const init_race = () => {
     message.style.top = `${height}px`;
     message.textContent = "Time: --- / Score: ---";
 
-    // // reference = document.createElement("div");
-    // author = document.createElement("a");
-    // document.body.append(author);
-    // // reference.append(author);
-    // author.style.position = "absolute";
-    // author.style.left = "5px";
-    // author.style.top = `${height + 300}px`;
-    // author.textContent = "Freepik";
-    // var link_car1 = "https://jp.freepik.com/free-vector/different-views-of-modern-car_1358018.htm#query=%E8%BB%8A&position=12&from_view=keyword&track=sph";
-    // author.href = link_car1;
-    // // 著作者：<a href=>Freepik</a>
-
     container = document.createElement("div");
     document.body.insertBefore(container, car);
-    // document.body.before(container, car);
     container.style.position = "absolute";
     container.style.width = `${width}px`;
     container.style.height = `${height}px`;
@@ -195,7 +249,6 @@ const init_race = () => {
     road.style.position = "absolute";
     road.style.width = `${roadWidth}px`;
     road.style.height = `${roadHeight}px`;
-    // road.style.background = "linear-gradient(0, #00f 50%, #f00 50%)";
     road.style.background = "linear-gradient(to bottom, #F00, #FFA500 15%, #FF0 30%, #008000 44%, #0FF 58%, #00F 72%, #800080)";
     road.style.backgroundSize = "100px 100px";
 
@@ -209,7 +262,7 @@ const init_race = () => {
     // マウス操作による左右移動
     let originalX = -1;
     document.onmousedown = document.ontouchstart = (e) => {
-        // e.preventDefault();
+        e.preventDefault();
         if (e.touches && e.touches[0]) {
             e = e.touches[0];
         }
@@ -217,7 +270,7 @@ const init_race = () => {
         dx = 0;
     };
     document.onmousemove = document.ontouchmove = (e) => {
-        // e.preventDefault();
+        e.preventDefault();
         if (e.touches && e.touches[0]) {
             e = e.touches[0];
         }
@@ -230,7 +283,7 @@ const init_race = () => {
         }
     };
     document.onmouseup = document.ontouchend = (e) => {
-        // e.preventDefault();
+        e.preventDefault();
         originalX = -1;
         dx = 0;
     };
@@ -261,27 +314,14 @@ const init_race = () => {
 let heroX = 0;
 let heroY = 0;
 let heroDeg = 0;
+const audio_select = new Audio("sound/car_select.mp3");
 const audio_start = new Audio("sound/start.mp3");
 const audio_race = new Audio("sound/race.mp3");
 const audio_clear = new Audio("sound/clear.mp3");
 
 // window.onload = async () => {
 window.onload = () => {
-    // init_game();
-    init_race();
-
-    // スタート前からレースBGMを流す
-
-    audio_race.play();
-
-    const intervalId = setInterval(() => {
-        countDown();
-        if (count == 0) {
-            startGame();
-        } else if (count == -2) {
-            clearInterval(intervalId);//intervalIdをclearIntervalで指定
-        }
-    }, 1000);
+    init_game();
 }
 
 // 一定時間処理を遅らせる関数
