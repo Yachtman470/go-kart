@@ -74,11 +74,11 @@ const createObject = (fromY) => {
         element.style.overflow = "hidden";
         // let isCoin;
         const whatObject = Math.random();
-        if (whatObject < 0.7) {
+        if (whatObject < 0.5) {
             element.src = "img/coin.png";
             element.style.borderRadius = "100%";
             // isCoin = true;
-        } else if (whatObject < 0.85) {
+        } else if (whatObject < 0.75) {
             element.src = "img/wall.png";
         } else {
             element.src = "img/kame.png";
@@ -107,11 +107,11 @@ const checkCollision = (from, to, time) => {
         const { x, y, element, whatObject } = object;
         if (from <= y && y <= to) {
             if (Math.abs(x - heroX + winding) < objectSize / 2) {
-                if (whatObject < 0.7) {
+                if (whatObject < 0.5) {
                     score += 100;
                     element.remove();
                     object.willRemove = true;
-                } else if (whatObject < 0.85) {
+                } else if (whatObject < 0.75) {
                     collision = 1;
                 } else {
                     collision = 2;
