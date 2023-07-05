@@ -1,7 +1,7 @@
 let container;
 const width = 1000;
 const height = 600;
-const adjustWidth = 30;
+const adjustWidth = 20;
 const perspective = 50;
 const screen_left = 300;
 const screen_top = 200;
@@ -19,7 +19,9 @@ const roadWidth = 300;
 const roadHeight = 50000;
 const eyeToRoad = eyeToGround - 1;
 
-const render = () => {
+const render = (time) => {
+    const winding = Math.sin(time) * 150;
+
     ground.style.transform = `
     translate3d(${(width - groundWidth) / 2}px, ${(height - groundHeight) / 2}px, 0)
     rotate3d(0, 0, 1, ${-heroDeg}deg)
@@ -27,12 +29,20 @@ const render = () => {
     rotate3d(1, 0, 0, 90deg)
     `;
 
+    // road.style.transform = `
+    // translate3d(${(width - roadWidth) / 2}px, ${(height - roadHeight) / 2}px, 0)
+    // rotate3d(0, 0, 1, ${-heroDeg}deg)
+    // translate3d(${-heroX}px, ${eyeToRoad}px, 0)
+    // rotate3d(1, 0, 0, 90deg)  
+    // translate3d(0, ${heroY % 100}px, 0)
+    // `;
+
     road.style.transform = `
     translate3d(${(width - roadWidth) / 2}px, ${(height - roadHeight) / 2}px, 0)
     rotate3d(0, 0, 1, ${-heroDeg}deg)
     translate3d(${-heroX}px, ${eyeToRoad}px, 0)
     rotate3d(1, 0, 0, 90deg)  
-    translate3d(0, ${heroY % 100}px, 0)
+    translate3d(${winding}px, ${heroY % 100}px, 0)
     `;
 
     for (const object of objectList) {
@@ -43,8 +53,8 @@ const render = () => {
         translate3d(${-heroX}px, ${eyeToRoad}px, 0)
         rotate3d(1, 0, 0, 90deg)
         translate3d(0, ${heroY}px, 0)
-        translate3d(${x}px, ${-y}px, ${objectSize / 2}px)
-        rotate3d(1, 0, 0, -90deg)    
+        translate3d(${x + winding}px, ${-y}px, ${objectSize / 2}px)
+        rotate3d(1, 0, 0, -90deg)
         `;
     }
 };
@@ -79,6 +89,7 @@ const createObject = (fromY) => {
         // element.style.borderRadius = isCoin ? "100%" : "0%";
         // element.textContent = isCoin ? "💰" : "🧱";
         element.style.backgroundColor = "#880";
+        // const x_d = x + time * 30;
         addObjects.push({ x, y, element, whatObject });
     }
     addObjects.sort((a, b) => a.y - b.y);
@@ -89,12 +100,13 @@ const createObject = (fromY) => {
 }
 
 let score = 0;
-const checkCollision = (from, to) => {
+const checkCollision = (from, to, time) => {
     let collision = 0;
+    const winding = Math.sin(time) * 150;
     for (const object of objectList) {
         const { x, y, element, whatObject } = object;
         if (from <= y && y <= to) {
-            if (Math.abs(x - heroX) < objectSize / 2) {
+            if (Math.abs(x - heroX + winding) < objectSize / 2) {
                 if (whatObject < 0.7) {
                     score += 100;
                     element.remove();
@@ -134,7 +146,6 @@ const countDown = () => {
             break;
         case -2:
             countNum.textContent = "";
-            console.log("here");
             break;
     }
 }
@@ -170,7 +181,7 @@ const init_game = () => {
     choose_p.style.color = "#000";
     choose_p.style.position = "absolute";
     choose_p.style.textAlign = "center";
-    choose_p.innerText = "NO POLICE AND\nNO SPEED LIMITS...\n\nCHOOSE YOUR CAR";
+    choose_p.innerText = "NO POLICE AND\nNO SPEED LIMITS...\n\n←\b\bCHOOSE YOUR CAR\b\b→";
     choose_p.style.width = `${1000}px`;
     choose_p.style.left = `${screen_left}px`;
     choose_p.style.top = `${screen_top / 3}px`;
@@ -194,7 +205,8 @@ const init_game = () => {
                 car0.remove();
                 car1.remove();
                 // choose_p.remove();
-                choose_p.innerText = "Pick Up Coins!";
+                choose_p.innerText = "Pick Up Coins!\n←\b\bMove Your Car\b\b→";
+                choose_p.style.top = `${screen_top / 6}px`;
                 choose_p.style.fontSize = "40px";
                 audio_select.pause();
                 before_race();
@@ -204,7 +216,8 @@ const init_game = () => {
                 car0.remove();
                 car1.remove();
                 // choose_p.remove();
-                choose_p.innerText = "Pick Up Coins!";
+                choose_p.innerText = "Pick Up Coins!\n←\b\bMove Your Car\b\b→";
+                choose_p.style.top = `${screen_top / 6}px`;
                 choose_p.style.fontSize = "40px";
                 audio_select.pause();
                 before_race();
@@ -342,7 +355,7 @@ const init_race = () => {
     // 初期的にオブジェクトを500px分生成
     createObject(500);
     updateDistance = 500;
-    render();
+    render(0);
 };
 
 let heroX = 0;
@@ -369,6 +382,7 @@ const startGame = async () => {
 
     while (true) {
         const leftTime = Math.max(0, endTime - Date.now()) / 1000;
+        const time = 30 - leftTime;
         message.textContent = `Time: ${leftTime.toFixed(3)} / Score: ${score}`;
 
         // 一定の走行距離を超える度に1000px分オブジェクトを追加生成
@@ -404,9 +418,9 @@ const startGame = async () => {
 
         // 衝突/スリップ判定
         if (v > 0) {
-            if (checkCollision(heroY - 30, heroY - 30 + v) == 1) {
+            if (checkCollision(heroY - 30, heroY - 30 + v, time) == 1) {
                 v = -v;
-            } else if (checkCollision(heroY - 30, heroY - 30 + v) == 2) {
+            } else if (checkCollision(heroY - 30, heroY - 30 + v, time) == 2) {
                 v = 3;
                 if (Math.random() < 0.5) {
                     dx = 3;
@@ -418,12 +432,14 @@ const startGame = async () => {
 
         heroY += v;
         heroX += dx * 3;
-        if (heroX < -roadWidth / 2 - adjustWidth || roadWidth / 2 + adjustWidth < heroX) {
+        const winding = Math.sin((30 - leftTime)) * 150;
+        console.log(30 - leftTime);
+        if (heroX < -roadWidth / 2 - adjustWidth + winding || roadWidth / 2 + adjustWidth + winding < heroX) {
             finish = false;
             break;
         }
         // heroX = Math.max(Math.min(heroX, roadWidth / 2), -roadWidth / 2);
-        render();
+        render(30 - leftTime);
         if (leftTime === 0) {
             break;
         }
@@ -437,11 +453,13 @@ const startGame = async () => {
         audio_race.pause();
         countNum.textContent = "Finish!";
         await sleep(2000);
+        message.style.color = "#F00";
         audio_clear.play();
     } else {
         audio_race.pause();
         countNum.textContent = "Game Over...";
         await sleep(2000);
+        message.style.color = "#F00";
         audio_gameOver.play();
     }
 };
