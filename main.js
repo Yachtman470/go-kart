@@ -181,7 +181,7 @@ const init_game = () => {
     choose_p.style.color = "#000";
     choose_p.style.position = "absolute";
     choose_p.style.textAlign = "center";
-    choose_p.innerText = "NO POLICE AND\nNO SPEED LIMITS...\n\n←\b\bCHOOSE YOUR CAR\b\b→";
+    choose_p.innerText = "NO POLICE AND\nNO SPEED LIMITS...\n\n←\b\bChoose Your Car\b\b→";
     choose_p.style.width = `${1000}px`;
     choose_p.style.left = `${screen_left}px`;
     choose_p.style.top = `${screen_top / 3}px`;
