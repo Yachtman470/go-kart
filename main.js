@@ -1,12 +1,11 @@
 let container;
-const width = 300;
-const height = 300;
+const width = 1000;
+const height = 600;
 const adjustWidth = 30;
 const perspective = 50;
 const screen_left = 300;
-const screen_top = 300;
-
-const carSize = 120;
+const screen_top = 200;
+const carSize = 200;
 const carShow = 400;
 const objectSize = 50;
 
@@ -138,7 +137,6 @@ const countDown = () => {
             console.log("here");
             break;
     }
-
 }
 
 // 車の選択を0/1で保持
@@ -172,7 +170,8 @@ const init_game = () => {
     choose_p.style.color = "#000";
     choose_p.style.position = "absolute";
     choose_p.style.textAlign = "center";
-    choose_p.innerText = "NO POLICE AND\nNO SPEED LIMITS...\n\nCHOODE YOUR CAR";
+    choose_p.innerText = "NO POLICE AND\nNO SPEED LIMITS...\n\nCHOOSE YOUR CAR";
+    choose_p.style.width = `${1000}px`;
     choose_p.style.left = `${screen_left}px`;
     choose_p.style.top = `${screen_top / 3}px`;
 
@@ -194,7 +193,9 @@ const init_game = () => {
                 car_select = 0;
                 car0.remove();
                 car1.remove();
-                choose_p.remove();
+                // choose_p.remove();
+                choose_p.innerText = "Pick Up Coins!";
+                choose_p.style.fontSize = "40px";
                 audio_select.pause();
                 before_race();
                 break;
@@ -202,7 +203,9 @@ const init_game = () => {
                 car_select = 1;
                 car0.remove();
                 car1.remove();
-                choose_p.remove();
+                // choose_p.remove();
+                choose_p.innerText = "Pick Up Coins!";
+                choose_p.style.fontSize = "40px";
                 audio_select.pause();
                 before_race();
                 break;
@@ -220,7 +223,8 @@ const before_race = () => {
         if (count == 0) {
             startGame();
         } else if (count == -2) {
-            clearInterval(intervalId);//intervalIdをclearIntervalで指定
+            //intervalIdをclearIntervalで指定
+            clearInterval(intervalId);
         }
     }, 1000);
 }
@@ -241,8 +245,9 @@ const init_race = () => {
     message = document.createElement("div");
     document.body.append(message);
     message.style.position = "absolute";
-    message.style.left = "5px";
-    message.style.top = `${height}px`;
+    message.style.left = `${width}px`;
+    message.style.top = `${height * 1.4}px`;
+    message.style.fontSize = "30px";
     message.textContent = "Time: --- / Score: ---";
 
     container = document.createElement("div");
@@ -273,10 +278,20 @@ const init_race = () => {
 
     countNum = document.createElement("p");
     container.append(countNum);
-    countNum.style.fontSize = "30px";
+    countNum.style.fontSize = "50px";
     countNum.style.color = "#FFF";
     countNum.style.textAlign = "center";
     countNum.textContent = "Are You Ready?";
+
+    // title = document.createElement("p");
+    // .append(title);
+    // title.style.position = "absolute";
+    // title.style.left = `${screen_left}px`;
+    // title.style.top = `${-100}px`;
+    // title.style.fontSize = "50px";
+    // title.style.color = "#000";
+    // title.style.textAlign = "center";
+    // title.textContent = "aaaaa";
 
     // マウス操作による左右移動
     let originalX = -1;
@@ -354,7 +369,7 @@ const startGame = async () => {
 
     while (true) {
         const leftTime = Math.max(0, endTime - Date.now()) / 1000;
-        message.textContent = `TIme: ${leftTime.toFixed(3)} / Score: ${score}`;
+        message.textContent = `Time: ${leftTime.toFixed(3)} / Score: ${score}`;
 
         // 一定の走行距離を超える度に1000px分オブジェクトを追加生成
         if (heroY > updateDistance) {
