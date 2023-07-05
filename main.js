@@ -1,7 +1,7 @@
 let container;
 const width = 300;
 const height = 300;
-const ajustWidth = 30;
+const adjustWidth = 30;
 const perspective = 50;
 const screen_left = 300;
 const screen_top = 300;
@@ -383,7 +383,6 @@ const startGame = async () => {
         }
         heroDeg = Math.max(Math.min(30, heroDeg), -30);
 
-
         // 加速度と風の抵抗
         v += 0.1;
         v -= v ** 3 * 0.0003;
@@ -404,7 +403,7 @@ const startGame = async () => {
 
         heroY += v;
         heroX += dx * 3;
-        if (heroX < -roadWidth / 2 - ajustWidth || roadWidth / 2 + ajustWidth < heroX) {
+        if (heroX < -roadWidth / 2 - adjustWidth || roadWidth / 2 + adjustWidth < heroX) {
             finish = false;
             break;
         }
